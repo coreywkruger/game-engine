@@ -1,5 +1,4 @@
 const path = require("path");
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 
@@ -21,21 +20,18 @@ module.exports = {
             }
           }
         ]
-      },
-      {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          use: "css-loader"
-        })
       }
     ]
   },
   plugins: [
-    new ExtractTextPlugin("css/bundle.css"),
     new CopyWebpackPlugin([
       {
         from: "./src/index.html",
         to: "index.html"
+      },
+      {
+        from: "./src/css/index.css",
+        to: "css/bundle.css"
       }
     ])
   ],
