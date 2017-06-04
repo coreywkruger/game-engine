@@ -26,7 +26,11 @@ function initScene() {
   scene.addObject(car);
   scene.setActiveCamera(carCam);
 
-  for (var i = 0; i < 60; i++) {
+  scene.addObject(new Sun("sun1", 0.8, 2, 0.8, 0xffffff, 0.8));
+  scene.addObject(new Sun("sun2", -1, -0.4, -1, 0xffffff, 0.3));
+
+  // cube stuff
+  for (var i = 0; i < 20; i++) {
     let cube = new Cube(`cube-${i}`, 45000, 45000, 45000, 0x00ff00);
     cube.setPosition(
       Math.floor(Math.random() * 900000 - 900000 / 2 + 1),
@@ -34,10 +38,7 @@ function initScene() {
       Math.floor(Math.random() * 900000 - 900000 / 2 + 1)
     );
     scene.addObject(cube);
-  }
-
-  scene.addObject(new Sun("sun1", 0.8, 2, 0.8, 0xffffff, 0.8));
-  scene.addObject(new Sun("sun2", -1, -0.4, -1, 0xffffff, 0.3));
+  } // 
 
   // handle keyboard
   var keyboard = new KeyboardControls();
@@ -70,6 +71,8 @@ function initScene() {
     car.rotateRight();
   });
 
+  jquery(window).on("keydown", event => keyboard.onKeyDown(event.keyCode));
+  jquery(window).on("keyup", event => keyboard.onKeyUp(event.keyCode));
   // add canvas to page
   jquery("#view").append(scene.getElement());
 
@@ -87,7 +90,7 @@ function animate() {
     },
     1000 / 30
   );
-  for (var i = 0; i < 60; i++) {
+  for (var i = 0; i < 20; i++) {
     let cube = SCENE.getObject(`cube-${i}`);
     cube.rotate(
       0.0003 * (i % 10 - 30),
@@ -117,7 +120,7 @@ function CreateCar(id) {
   front_right.setPosition(5000, -5000, -1000);
   front_right.setRotationZ(Math.PI / 2);
 
-  let car = new LevelGroundPlayer("id");
+  let car = new LevelGroundPlayer(id);
   car.addChild(cab);
   car.addChild(rear_left);
   car.addChild(rear_right);
