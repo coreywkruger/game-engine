@@ -5,7 +5,6 @@ import Camera from "./camera";
 import { Cylinder, Cube } from "./primitives";
 import { LevelGroundPlayer } from "./player";
 import { Sun } from "./light";
-import jquery from "jquery";
 
 function initScene() {
   // make scene
@@ -38,7 +37,7 @@ function initScene() {
       Math.floor(Math.random() * 900000 - 900000 / 2 + 1)
     );
     scene.addObject(cube);
-  } // 
+  } //
 
   // handle keyboard
   var keyboard = new KeyboardControls();
@@ -71,10 +70,18 @@ function initScene() {
     car.rotateRight();
   });
 
-  jquery(window).on("keydown", event => keyboard.onKeyDown(event.keyCode));
-  jquery(window).on("keyup", event => keyboard.onKeyUp(event.keyCode));
+  document.addEventListener(
+    "keydown",
+    event => keyboard.onKeyDown(event.which),
+    false
+  );
+  document.addEventListener(
+    "keyup",
+    event => keyboard.onKeyUp(event.which),
+    false
+  );
   // add canvas to page
-  jquery("#view").append(scene.getElement());
+  document.getElementById("view").appendChild(scene.getElement());
 
   return scene;
 }
