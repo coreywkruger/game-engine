@@ -1,19 +1,22 @@
-import GameScene from "./scene";
-import GameEntity from "./entity";
-import KeyboardControls from "./controls";
-import Camera from "./camera";
-import { Cylinder, Cube } from "./primitives";
-import { LevelGroundPlayer } from "./player";
-import { Sun } from "./light";
+import {
+  GameScene,
+  GameEntity,
+  KeyboardControls,
+  Camera,
+  Cylinder,
+  Cube,
+  LevelGroundPlayer,
+  Sun
+} from "idaho-ghola";
 
 function initScene() {
   // make scene
   let scene = new GameScene();
 
   // initialize with a car object
-  var id = Math.floor(Math.random() * 1000 + 1);
-  var car = CreateCar(id);
-  var carCam = new Camera(
+  let id = Math.floor(Math.random() * 1000 + 1);
+  let car = CreateCar(id);
+  let carCam = new Camera(
     "cam1",
     95,
     window.innerWidth / window.innerHeight,
@@ -40,7 +43,7 @@ function initScene() {
   } //
 
   // handle keyboard
-  var keyboard = new KeyboardControls();
+  let keyboard = new KeyboardControls();
 
   // forward
   keyboard.createAction("87", function() {
