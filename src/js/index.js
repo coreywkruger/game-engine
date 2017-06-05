@@ -8,11 +8,35 @@ import {
   LevelGroundPlayer,
   Sun
 } from "idaho-ghola";
+import WebRTCClient from "webrtc-js";
 
 function initScene() {
+  const host = process.env.HOST;
+  const port = process.env.PORT;
+
+  // my peering service is a ws server in this example
+  let WS = new WebSocket(`ws://${host}:${port}`);
+
+  // new client
+  let Client = new WebRTCClient();
+  Client.setName(`TacoEater${Math.floor(Math.random() * 100000)}`);
+
+  // send to peering service
+  Client.sendToServer = function(message) {
+    message.name = Client.name;
+    WS.send(JSON.stringify(message));
+  };
+
+  // on message from peering service
+  WS.onmessage = function(message) {
+    if (open) {
+      // only receive new messages if allowed
+      Client.onServerMessage(JSON.parse(message.data));
+    }
+  };
+
   // make scene
   let scene = new GameScene();
-
   // initialize with a car object
   let id = Math.floor(Math.random() * 1000 + 1);
   let car = CreateCar(id);
@@ -31,60 +55,154 @@ function initScene() {
   scene.addObject(new Sun("sun1", 0.8, 2, 0.8, 0xffffff, 0.8));
   scene.addObject(new Sun("sun2", -1, -0.4, -1, 0xffffff, 0.3));
 
-  // cube stuff
-  for (var i = 0; i < 20; i++) {
-    let cube = new Cube(`cube-${i}`, 45000, 45000, 45000, 0x00ff00);
-    cube.setPosition(
-      Math.floor(Math.random() * 900000 - 900000 / 2 + 1),
-      Math.floor(Math.random() * 100000 - 0 * 100000 / 2 + 1),
-      Math.floor(Math.random() * 900000 - 900000 / 2 + 1)
+  WS.onopen = function() {
+    // // cube stuff
+    // for (var i = 0; i < 20; i++) {
+    //   let cube = new Cube(`cube-${i}`, 45000, 45000, 45000, 0x00ff00);
+    //   cube.setPosition(
+    //     Math.floor(Math.random() * 900000 - 900000 / 2 + 1),
+    //     Math.floor(Math.random() * 100000 - 0 * 100000 / 2 + 1),
+    //     Math.floor(Math.random() * 900000 - 900000 / 2 + 1)
+    //   );
+    //   scene.addObject(cube);
+    // } //
+
+    (function ping() {
+      Client.ping();
+      setTimeout(ping, 5000);
+    })();
+
+    // handle keyboard
+    let keyboard = new KeyboardControls();
+
+    // forward
+    keyboard.createAction("87", function() {
+      car.moveForward();
+      car.getChild("front_right").rotateX(-0.01);
+      car.getChild("front_left").rotateX(-0.01);
+      car.getChild("rear_right").rotateX(-0.01);
+      car.getChild("rear_left").rotateX(-0.01);
+      let rotation = car.getAnchor().rotation;
+      Client.broadcast({
+        id: Client.id,
+        type: "rotate",
+        x: rotation.x,
+        y: rotation.y,
+        z: rotation.z
+      });
+      let position = car.getAnchor().position;
+      Client.broadcast({
+        id: Client.id,
+        type: "translate",
+        x: position.x,
+        y: position.y,
+        z: position.z
+      });
+    });
+
+    // backward
+    keyboard.createAction("83", function() {
+      car.moveBackward();
+      car.getChild("front_right").rotateX(0.01);
+      car.getChild("front_left").rotateX(0.01);
+      car.getChild("rear_right").rotateX(0.01);
+      car.getChild("rear_left").rotateX(0.01);
+      let rotation = car.getAnchor().rotation;
+      Client.broadcast({
+        id: Client.id,
+        type: "rotate",
+        ...rotation
+      });
+      let position = car.getAnchor().position;
+      Client.broadcast({
+        id: Client.id,
+        type: "translate",
+        ...position
+      });
+    });
+
+    // left
+    keyboard.createAction("65", function() {
+      car.rotateLeft();
+      let rotation = car.getAnchor().rotation;
+      Client.broadcast({
+        id: Client.id,
+        type: "rotate",
+        ...rotation
+      });
+    });
+
+    // right
+    keyboard.createAction("68", function() {
+      car.rotateRight();
+      let rotation = car.getAnchor().rotation;
+      Client.broadcast({
+        id: Client.id,
+        type: "rotate",
+        ...rotation
+      });
+    });
+
+    document.addEventListener(
+      "keydown",
+      event => keyboard.onKeyDown(event.which),
+      false
     );
-    scene.addObject(cube);
-  } //
+    document.addEventListener(
+      "keyup",
+      event => keyboard.onKeyUp(event.which),
+      false
+    );
+    // add canvas to page
+    document.getElementById("view").appendChild(scene.getElement());
 
-  // handle keyboard
-  let keyboard = new KeyboardControls();
+    ///
+    ///
+    ///
+    ///
+    ///
 
-  // forward
-  keyboard.createAction("87", function() {
-    car.moveForward();
-    car.getChild("front_right").rotateX(-0.01);
-    car.getChild("front_left").rotateX(-0.01);
-    car.getChild("rear_right").rotateX(-0.01);
-    car.getChild("rear_left").rotateX(-0.01);
-  });
+    let connected = {};
 
-  // backward
-  keyboard.createAction("83", function() {
-    car.moveBackward();
-    car.getChild("front_right").rotateX(0.01);
-    car.getChild("front_left").rotateX(0.01);
-    car.getChild("rear_right").rotateX(0.01);
-    car.getChild("rear_left").rotateX(0.01);
-  });
+    Client.onconnect = function() {
+      Client.getOpenConnections().forEach(c => {
+        if (!connected[c.to_client]) {
+          connected[c.to_client] = c;
+          ///
+          ///
+          /// add new player
+          let player = CreateCar(c.to_client);
+          scene.addObject(player);
+        }
+      });
+    };
 
-  // left
-  keyboard.createAction("65", function() {
-    car.rotateLeft();
-  });
+    Client.onavailableconnection = function() {
+      // when a new peer becomes available for connection
+      Client.getAvailableConnections().map(connection => {
+        if (!Client.getConnectionsByClientID(connection.from_client).length) {
+          // if not already connected, connect
+          Client.connect({
+            client_id: connection.from_client,
+            name: connection.name
+          });
+        }
+      });
+    };
 
-  // right
-  keyboard.createAction("68", function() {
-    car.rotateRight();
-  });
-
-  document.addEventListener(
-    "keydown",
-    event => keyboard.onKeyDown(event.which),
-    false
-  );
-  document.addEventListener(
-    "keyup",
-    event => keyboard.onKeyUp(event.which),
-    false
-  );
-  // add canvas to page
-  document.getElementById("view").appendChild(scene.getElement());
+    Client.onmessage = function(connectionID, data) {
+      let message = JSON.parse(data);
+      let peer = Client.getPeer(connectionID);
+      // message is just a message
+      if (message.type === "translate") {
+        let player = scene.getObject(message.id);
+        player.setPosition(message.x, message.y, message.z);
+      } else if (message.type === "rotate") {
+        let player = scene.getObject(message.id);
+        player.setRotation(message.x, message.y, message.z);
+      }
+    };
+  };
 
   return scene;
 }
@@ -100,14 +218,14 @@ function animate() {
     },
     1000 / 30
   );
-  for (var i = 0; i < 20; i++) {
-    let cube = SCENE.getObject(`cube-${i}`);
-    cube.rotate(
-      0.0003 * (i % 10 - 30),
-      0.0003 * (i % 10 - 30),
-      0.0003 * (i % 10 - 30)
-    );
-  }
+  // for (var i = 0; i < 20; i++) {
+  //   let cube = SCENE.getObject(`cube-${i}`);
+  //   cube.rotate(
+  //     0.0003 * (i % 10 - 30),
+  //     0.0003 * (i % 10 - 30),
+  //     0.0003 * (i % 10 - 30)
+  //   );
+  // }
   SCENE.render();
 }
 

@@ -33,7 +33,8 @@ module.exports = {
         from: "./src/css/index.css",
         to: "css/bundle.css"
       }
-    ])
+    ]),
+    new webpack.EnvironmentPlugin(["HOST", "PORT"])
   ],
   devServer: {
     contentBase: path.join(__dirname, "dist"),
