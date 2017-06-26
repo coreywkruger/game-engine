@@ -18,7 +18,7 @@ let WS = new WebSocket(`ws://${host}:${port}`);
 
 // new client
 let Client = new WebRTCClient();
-let name = `TacoEater${Math.floor(Math.random() * 100000)}`;
+const name = `TacoEater${Math.floor(Math.random() * 100000)}`;
 Client.setName(name);
 
 // send to peering service
@@ -148,30 +148,25 @@ WS.onopen = function() {
   let num = 0;
   let tock = 0;
   (function animate() {
-    setTimeout(
-      function() {
-        //
-        let rotation = car.getRotation();
-        Client.broadcast({
-          id: Client.id,
-          type: "rotate",
-          x: rotation.x,
-          y: rotation.y,
-          z: rotation.z
-        });
-        let position = car.getPosition();
-        Client.broadcast({
-          id: Client.id,
-          type: "translate",
-          x: position.x,
-          y: position.y,
-          z: position.z
-        });
-        console.log(Client.getOpenConnections());
-        requestAnimationFrame(animate);
-      },
-      30
-    );
+    setTimeout(function() {
+      let rotation = car.getRotation();
+      Client.broadcast({
+        id: Client.id,
+        type: "rotate",
+        x: rotation.x,
+        y: rotation.y,
+        z: rotation.z
+      });
+      let position = car.getPosition();
+      Client.broadcast({
+        id: Client.id,
+        type: "translate",
+        x: position.x,
+        y: position.y,
+        z: position.z
+      });
+      requestAnimationFrame(animate);
+    }, 30);
     scene.render();
   })();
 };
@@ -205,4 +200,4 @@ function CreateCar(id) {
   return car;
 }
 
-function interpolate(current, distance, steps) {}
+function interpolate3dVector(current, destination, step, steps) {}
