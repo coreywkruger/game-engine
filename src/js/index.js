@@ -56,15 +56,11 @@ scene.addObject(new Sun("sun1", 0.8, 2, 0.8, 0xffffff, 0.8));
 scene.addObject(new Sun("sun2", -1, -0.4, -1, 0xffffff, 0.3));
 
 WS.onopen = function() {
-  (function ping() {
-    Client.ping();
-    setTimeout(ping, 5000);
-  })();
 
   // handle keyboard
   let keyboard = new KeyboardControls();
 
-  // forward
+  // forward W
   keyboard.createAction("87", function() {
     car.moveForward();
     car.getChild("front_right").rotateX(-0.01);
@@ -73,7 +69,7 @@ WS.onopen = function() {
     car.getChild("rear_left").rotateX(-0.01);
   });
 
-  // backward
+  // backward S
   keyboard.createAction("83", function() {
     car.moveBackward();
     car.getChild("front_right").rotateX(0.01);
@@ -82,12 +78,12 @@ WS.onopen = function() {
     car.getChild("rear_left").rotateX(0.01);
   });
 
-  // left
+  // left A
   keyboard.createAction("65", function() {
     car.rotateLeft();
   });
 
-  // right
+  // right D
   keyboard.createAction("68", function() {
     car.rotateRight();
   });
@@ -145,10 +141,10 @@ WS.onopen = function() {
     }
   };
 
-  let num = 0;
-  let tock = 0;
+  let tick = 0;
   (function animate() {
     setTimeout(function() {
+      scene.render();
       let rotation = car.getRotation();
       Client.broadcast({
         id: Client.id,
@@ -165,9 +161,15 @@ WS.onopen = function() {
         y: position.y,
         z: position.z
       });
+
+      tick++;
+      if(tick > 30 * 5){
+        tick = 0;
+        Client.ping();
+      }
+
       requestAnimationFrame(animate);
-    }, 30);
-    scene.render();
+    }, 1000 / 30);
   })();
 };
 
