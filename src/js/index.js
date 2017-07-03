@@ -56,7 +56,6 @@ scene.addObject(new Sun("sun1", 0.8, 2, 0.8, 0xffffff, 0.8));
 scene.addObject(new Sun("sun2", -1, -0.4, -1, 0xffffff, 0.3));
 
 WS.onopen = function() {
-
   // handle keyboard
   let keyboard = new KeyboardControls();
 
@@ -135,38 +134,49 @@ WS.onopen = function() {
     }
     // message is just a message
     if (message.type === "translate") {
-      player.setPosition(message.x, message.y, message.z);
+      player.createPositionInterpolation(message.x, message.y, message.z, 5);
     } else if (message.type === "rotate") {
-      player.setRotation(message.x, message.y, message.z);
+      console.log("here")
+      player.createEulerInterpolation(message.x, message.y, message.z, 5);
     }
   };
 
-  let tick = 0;
+  let pingTicker = new Ticker(function() {
+    Client.ping();
+  });
+  let broadcastTicker = new Ticker(function() {
+    let rotation = car.getRotation();
+    Client.broadcast({
+      id: Client.id,
+      type: "rotate",
+      x: rotation.x,
+      y: rotation.y,
+      z: rotation.z
+    });
+    let position = car.getPosition();
+    Client.broadcast({
+      id: Client.id,
+      type: "translate",
+      x: position.x,
+      y: position.y,
+      z: position.z
+    });
+  });
+
   (function animate() {
     setTimeout(function() {
       scene.render();
-      let rotation = car.getRotation();
-      Client.broadcast({
-        id: Client.id,
-        type: "rotate",
-        x: rotation.x,
-        y: rotation.y,
-        z: rotation.z
-      });
-      let position = car.getPosition();
-      Client.broadcast({
-        id: Client.id,
-        type: "translate",
-        x: position.x,
-        y: position.y,
-        z: position.z
-      });
 
-      tick++;
-      if(tick > 30 * 5){
-        tick = 0;
-        Client.ping();
+      let players = [];
+      let allObjects = scene.getAllObjects();
+      for (var i = 0; i < allObjects.length; i++) {
+        if (allObjects[i] instanceof LevelGroundPlayer) {
+          allObjects[i].interpolatePosition();
+          allObjects[i].interpolateRotation();
+        }
       }
+      broadcastTicker.tick(3);
+      pingTicker.tick(30 * 5);
 
       requestAnimationFrame(animate);
     }, 1000 / 30);
@@ -202,4 +212,18 @@ function CreateCar(id) {
   return car;
 }
 
-function interpolate3dVector(current, destination, step, steps) {}
+class Ticker {
+  constructor(func) {
+    this.frame = 0;
+    this.func = func;
+  }
+  tick(time) {
+    this.frame++;
+    if (this.frame > time) {
+      this.frame = 0;
+      this.func();
+      return true;
+    }
+    return false;
+  }
+}
