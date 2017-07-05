@@ -123,16 +123,18 @@ WS.onopen = function() {
 
   Client.onmessage = function(connectionID, data) {
     let message = JSON.parse(data);
-    let peer = Client.getPeerByClientID(connectionID);
     let player = scene.getObject(message.id);
-    if (!player) {
-      return;
-    }
+    if (!player) return;
     // message is just a message
-    if (message.type === "translate") {
-      player.createPositionInterpolation(message.x, message.y, message.z, 3);
-    } else if (message.type === "rotate") {
-      player.createEulerInterpolation(message.x, message.y, message.z, 3);
+    switch (message.type) {
+      case "translate":
+        player.createPositionInterpolation(message.x, message.y, message.z, 3);
+        break;
+      case "rotate":
+        player.createQuaternionInterpolation(message.x, message.y, message.z, 3);
+        break;
+      default:
+        break;
     }
   };
 
