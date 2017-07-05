@@ -100,25 +100,20 @@ WS.onopen = function() {
   // add canvas to page
   document.getElementById("view").appendChild(scene.getElement());
 
-  let connected = {};
-
   Client.onconnect = function(client_id) {
-    if (!connected[client_id]) {
-      connected[client_id] = Client.getConnectionsByClientID(client_id)[0];
-      let player = CreateCar(client_id);
-      scene.addObject(player);
-    }
+    let player = CreateCar(client_id);
+    scene.addObject(player);
   };
 
   Client.onremove = function(client_id) {};
 
   Client.onavailableconnection = function() {
-    // when a new peer becomes available for connection
+    // when a new peer becomes available for connection //
     Client.getAvailableConnections().forEach(connection => {
-      if (!connected[connection.from_client]) {
+      if (!Client.getPeerByClientID(connection.to_client)) {
         // // if not already connected, connect
         Client.connect({
-          client_id: connection.from_client,
+          client_id: connection.to_client,
           name: connection.name
         });
       }
@@ -127,7 +122,7 @@ WS.onopen = function() {
 
   Client.onmessage = function(connectionID, data) {
     let message = JSON.parse(data);
-    let peer = Client.getPeer(connectionID);
+    let peer = Client.getPeerByClientID(connectionID);
     let player = scene.getObject(message.id);
     if (!player) {
       return;
@@ -136,7 +131,6 @@ WS.onopen = function() {
     if (message.type === "translate") {
       player.createPositionInterpolation(message.x, message.y, message.z, 5);
     } else if (message.type === "rotate") {
-      console.log("here")
       player.createEulerInterpolation(message.x, message.y, message.z, 5);
     }
   };
