@@ -101,11 +101,12 @@ WS.onopen = function() {
   document.getElementById("view").appendChild(scene.getElement());
 
   Client.onconnect = function(client_id) {
-    let player = CreateCar(client_id);
-    scene.addObject(player);
+    scene.addObject(CreateCar(client_id));
   };
 
-  Client.onremove = function(client_id) {};
+  Client.onremove = function(client_id) {
+    scene.deleteObject(client_id);
+  };
 
   Client.onavailableconnection = function() {
     // when a new peer becomes available for connection //
@@ -129,9 +130,9 @@ WS.onopen = function() {
     }
     // message is just a message
     if (message.type === "translate") {
-      player.createPositionInterpolation(message.x, message.y, message.z, 5);
+      player.createPositionInterpolation(message.x, message.y, message.z, 3);
     } else if (message.type === "rotate") {
-      player.createEulerInterpolation(message.x, message.y, message.z, 5);
+      player.createEulerInterpolation(message.x, message.y, message.z, 3);
     }
   };
 
@@ -159,9 +160,7 @@ WS.onopen = function() {
 
   (function animate() {
     setTimeout(function() {
-      scene.render();
-
-      let players = [];
+      // scene.render();
       let allObjects = scene.getAllObjects();
       for (var i = 0; i < allObjects.length; i++) {
         if (allObjects[i] instanceof LevelGroundPlayer) {
@@ -171,7 +170,6 @@ WS.onopen = function() {
       }
       broadcastTicker.tick(3);
       pingTicker.tick(30 * 5);
-
       requestAnimationFrame(animate);
     }, 1000 / 30);
   })();
