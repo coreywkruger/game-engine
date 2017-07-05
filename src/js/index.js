@@ -160,7 +160,7 @@ WS.onopen = function() {
 
   (function animate() {
     setTimeout(function() {
-      // scene.render();
+      scene.render();
       let allObjects = scene.getAllObjects();
       for (var i = 0; i < allObjects.length; i++) {
         if (allObjects[i] instanceof LevelGroundPlayer) {
