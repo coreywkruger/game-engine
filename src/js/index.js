@@ -10,36 +10,30 @@ import {
 } from "idaho-ghola";
 import WebRTCClient from "webrtc-js";
 
+const name = `TacoEater${Math.floor(Math.random() * 100000)}`;
 const host = process.env.HOST;
 const port = process.env.PORT;
 
-// my peering service is a ws server in this example
+// my peering service is a ws server
 let WS = new WebSocket(`ws://${host}:${port}`);
 
 // new client
-let Client = new WebRTCClient();
-const name = `TacoEater${Math.floor(Math.random() * 100000)}`;
-Client.setName(name);
+let Client = new WebRTCClient({
+  name
+});
 
 // send to peering service
-Client.sendToServer = function(message) {
-  message.name = Client.name;
+Client.sendToPeerService = function(message) {
   WS.send(JSON.stringify(message));
 };
 
-// on message from peering service
+// on message from peer service
 WS.onmessage = function(message) {
-  if (open) {
-    // only receive new messages if allowed
-    Client.onServerMessage(JSON.parse(message.data));
-  }
+  Client.processPeerData(JSON.parse(message.data));
 };
 
-// make scene
 let scene = new GameScene();
-// initialize with a car object
-let id = Math.floor(Math.random() * 1000 + 1);
-let car = CreateCar(id);
+let car = CreateCar(Client.id);
 let carCam = new Camera(
   "cam1",
   95,
@@ -131,7 +125,12 @@ WS.onopen = function() {
         player.createPositionInterpolation(message.x, message.y, message.z, 3);
         break;
       case "rotate":
-        player.createQuaternionInterpolation(message.x, message.y, message.z, 3);
+        player.createQuaternionInterpolation(
+          message.x,
+          message.y,
+          message.z,
+          3
+        );
         break;
       default:
         break;
@@ -160,20 +159,22 @@ WS.onopen = function() {
     });
   });
 
+  const frameRate = 30;
+
   (function animate() {
     setTimeout(function() {
       scene.render();
-      let allObjects = scene.getAllObjects();
-      for (var i = 0; i < allObjects.length; i++) {
-        if (allObjects[i] instanceof LevelGroundPlayer) {
-          allObjects[i].interpolatePosition();
-          allObjects[i].interpolateRotation();
-        }
-      }
+      scene
+        .getAllObjects()
+        .filter(object => object instanceof LevelGroundPlayer)
+        .forEach(object => {
+          object.interpolatePosition();
+          object.interpolateRotation();
+        });
       broadcastTicker.tick(3);
-      pingTicker.tick(30 * 5);
+      pingTicker.tick(frameRate * 5);
       requestAnimationFrame(animate);
-    }, 1000 / 30);
+    }, 1000 / frameRate);
   })();
 };
 
