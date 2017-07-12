@@ -140,7 +140,7 @@ WS.onopen = function() {
   let broadcastTicker = new Ticker(function() {
     let rotation = car.getRotation();
     Client.broadcast({
-      entity_id: Client.id,
+      entity_id: car.id,
       type: "entity",
       action: "rotate",
       x: rotation.x,
@@ -149,7 +149,7 @@ WS.onopen = function() {
     });
     let position = car.getPosition();
     Client.broadcast({
-      entity_id: Client.id,
+      entity_id: car.id,
       type: "entity",
       action: "translate",
       x: position.x,
