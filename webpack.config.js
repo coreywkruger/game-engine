@@ -2,8 +2,6 @@ const path = require("path");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 
-process.traceDeprecation = true
-
 module.exports = {
   entry: "./src/js/index.js",
   output: {
@@ -16,10 +14,7 @@ module.exports = {
         test: /\.js$/,
         use: [
           {
-            loader: "babel-loader",
-            query: {
-              presets: ["es2015"]
-            }
+            loader: "babel-loader"
           }
         ]
       }
