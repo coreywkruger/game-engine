@@ -1,7 +1,14 @@
 #!/bin/bash
 
 dateFormatted="`date +'%a, %d %b %Y %H:%M:%S %z'`"
-contentType="application/octet-stream"
+extension="${sourceFile##*.}"
+
+case "${sourceFile##*.}" in
+"html") contentType="text/html";;
+"css") contentType="text/css";;
+"js") contentType="text/javascript";;
+esac
+
 stringToSign="PUT\n\n${contentType}\n${dateFormatted}\n/${s3Bucket}/${targetFile}"
 signature=`echo -en ${stringToSign} | openssl sha1 -hmac ${s3SecretKey} -binary | base64`
 
