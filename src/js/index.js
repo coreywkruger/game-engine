@@ -11,8 +11,8 @@ import {
 import WebRTCClient from "webrtc-js";
 
 const name = `TacoEater${Math.floor(Math.random() * 100000)}`;
-const host = process.env.HOST;
-const port = process.env.PORT;
+const host = process.env.PEER_HOST;
+const port = process.env.PEER_PORT;
 
 // my peering service is a ws server
 let WS = new WebSocket(`ws://${host}:${port}`);
@@ -117,23 +117,20 @@ WS.onopen = function() {
 
   Client.onmessage = function(connectionID, data) {
     let message = JSON.parse(data);
-    let player = scene.getObject(message.id);
-    if (!player) return;
-    // message is just a message
-    switch (message.type) {
-      case "translate":
-        player.createPositionInterpolation(message.x, message.y, message.z, 3);
-        break;
-      case "rotate":
-        player.createQuaternionInterpolation(
-          message.x,
-          message.y,
-          message.z,
-          3
-        );
-        break;
-      default:
-        break;
+    if (message.type === "entity") {
+      let entity = scene.getObject(message.entity_id);
+      if (entity) {
+        switch (message.action) {
+          case "translate":
+            entity.setPositionInterpolation(message.x, message.y, message.z, 3);
+            break;
+          case "rotate":
+            entity.setRotationInterpolation(message.x, message.y, message.z, 3);
+            break;
+          default:
+            break;
+        }
+      }
     }
   };
 
@@ -143,16 +140,18 @@ WS.onopen = function() {
   let broadcastTicker = new Ticker(function() {
     let rotation = car.getRotation();
     Client.broadcast({
-      id: Client.id,
-      type: "rotate",
+      entity_id: Client.id,
+      type: "entity",
+      action: "rotate",
       x: rotation.x,
       y: rotation.y,
       z: rotation.z
     });
     let position = car.getPosition();
     Client.broadcast({
-      id: Client.id,
-      type: "translate",
+      entity_id: Client.id,
+      type: "entity",
+      action: "translate",
       x: position.x,
       y: position.y,
       z: position.z

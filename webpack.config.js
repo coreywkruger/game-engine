@@ -2,11 +2,13 @@ const path = require("path");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
 
+process.traceDeprecation = true
+
 module.exports = {
   entry: "./src/js/index.js",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "js/bundle.js"
+    filename: "bundle.js"
   },
   module: {
     rules: [
@@ -31,10 +33,10 @@ module.exports = {
       },
       {
         from: "./src/css/index.css",
-        to: "css/bundle.css"
+        to: "bundle.css"
       }
     ]),
-    new webpack.EnvironmentPlugin(["HOST", "PORT"])
+    new webpack.EnvironmentPlugin(["PEER_HOST", "PEER_PORT"])
   ],
   devServer: {
     contentBase: path.join(__dirname, "dist"),
