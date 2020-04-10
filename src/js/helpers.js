@@ -1,8 +1,5 @@
-import {
-Cylinder,
-Cube,
-LevelGroundPlayer,
-} from "idaho-ghola";
+import { Cylinder, Cube } from "./primitives.js";
+import { LevelGroundPlayer } from './player.js';
 
 function CreateCar(id) {
     let cab = new Cube(`car-cab-${id}`, 4500, 4500, 15000, 0x00ff00);

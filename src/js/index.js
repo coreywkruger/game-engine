@@ -1,7 +1,7 @@
 import { CreateCar } from './helpers.js';
 import { Ticker } from './clock.js';
 import { Controls } from './controls.js';
-import { GameScene } from './scene.js';
+import { World } from './world.js';
 import { Camera } from './camera.js';
 import { Sun } from './light.js';
 import { LevelGroundPlayer } from './player.js';
@@ -25,19 +25,19 @@ Connection.onmessage = function(message) {
   Client.processPeerData(JSON.parse(message.data));
 };
 
-let scene = new GameScene();
+let world = new World();
 let car = CreateCar(Client.id);
-let carCam = new Camera('cam1', 95, window.innerWidth / window.innerHeight, 1, 1000000);
+let camera1 = new Camera('cam1', 35, window.innerWidth / window.innerHeight);
 
-carCam.setPosition(0, 9000, 20000);
-car.addChild(carCam);
-scene.addObject(car);
-scene.setActiveCamera(carCam);
+camera1.setPosition(0, 5000, 50000);
+car.addChild(camera1);
+world.addObject(car);
+// world.setActiveCamera(camera1);
 
-scene.addObject(new Sun('sun1', 0.8, 2, 0.8, 0xffffff, 0.8));
-scene.addObject(new Sun('sun2', -1, -0.4, -1, 0xffffff, 0.3));
+world.addObject(new Sun('sun1', 0.8, 2, 0.8, 0xffffff, 0.8));
+world.addObject(new Sun('sun2', -1, -0.4, -1, 0xffffff, 0.3));
 
-const sceneActions = {
+const worldActions = {
   'translate': function(entity, message) {
     entity.setPositionInterpolation(message.x, message.y, message.z, 3);
   },
@@ -48,11 +48,11 @@ const sceneActions = {
 
 Connection.onopen = function() {
   Client.onconnect = function(client_id) {
-    scene.addObject(CreateCar(client_id));
+    world.addObject(CreateCar(client_id));
   };
   
   Client.onremove = function(client_id) {
-    scene.deleteObject(client_id);
+    world.deleteObject(client_id);
   };
   
   Client.onavailableconnection = function() {
@@ -71,9 +71,9 @@ Connection.onopen = function() {
   Client.onmessage = function(connectionID, data) {
     let message = JSON.parse(data);
     if (message.type === 'entity') {
-      let entity = scene.getObject(message.entity_id);
+      let entity = world.getObject(message.entity_id);
       if (entity) {
-        sceneActions[message.action](entity, message);
+        worldActions[message.action](entity, message);
       }
     }
   };
@@ -112,6 +112,14 @@ keyboard.createAction('d', function() {
   car.rotateRight();
 });
 
+keyboard.createAction('z', function() {
+  car.translateY(100);
+});
+
+keyboard.createAction('x', function() {
+  car.translateY(-100);
+});
+
 document.addEventListener('keydown', event => keyboard.onKeyDown(event.key), false);
 document.addEventListener('keyup', event => keyboard.onKeyUp(event.key), false);
 
@@ -139,29 +147,32 @@ let broadcaster = new Ticker(function() {
 });
 
 // add canvas to page
-document.getElementById('view').appendChild(scene.getElement());
+document.getElementById('view').appendChild(camera1.getElement());
 
 // 30 frames per second
 const frameRate = 30;
 
 (function animate(){
   setTimeout(function() {
-    // render scene on canvase
-    scene.render();
+    // render world on canvase
+    camera1.render(world);
 
     // update all object positions
-    scene.getAllObjects()
-      .filter(object => object instanceof LevelGroundPlayer)
+    world.getAllObjects()
+      .filter(object => {
+        if (object instanceof LevelGroundPlayer && object.id !== car.id) {
+          return true;
+        }
+      })
       .forEach(object => {
         object.interpolatePosition();
         object.interpolateRotation();
       });
 
-    // broadcaster user coordinates
-    broadcaster.tick(3);
-
-    // listen for other users coordinates
-    listener.tick(frameRate * 5);
+    // // broadcaster user coordinates
+    // broadcaster.tick(3);
+    // // listen for other users coordinates
+    // listener.tick(frameRate * 5);
 
     requestAnimationFrame(animate);
   }, 1000 / frameRate);

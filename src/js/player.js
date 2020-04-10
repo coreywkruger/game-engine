@@ -2,6 +2,9 @@ import { GameEntity } from "./entity.js";
 import * as THREE from "three";
 
 class LevelGroundPlayer extends GameEntity {
+  constructor(id) {
+    super(id);
+  }
   moveForward() {
     var direction = this.getAnchor().matrix.elements;
     var directionVector = new THREE.Vector3(
