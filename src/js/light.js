@@ -1,5 +1,5 @@
-import { GameEntity } from "./entity.js";
-import * as THREE from "three";
+import { GameEntity } from './entity.js';
+import * as THREE from 'three';
 
 class Sun extends GameEntity {
   constructor(name, dirx, diry, dirz, color, intensity) {

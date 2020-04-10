@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from 'three';
 
 class Interpolater {
   constructor(start, end, steps) {
@@ -29,7 +29,7 @@ class Vector3dInterpolation extends Interpolater {
       .add(
         new THREE.Vector3()
           .subVectors(this.end, this.start)
-          .setLength(this.step * distance / this.steps)
+          .setLength((this.step * distance) / this.steps)
       );
     return newVector;
   }
@@ -48,9 +48,9 @@ class QuatInterpolation extends Interpolater {
         .setFromEuler(this.start)
         .slerp(
           new THREE.Quaternion().setFromEuler(this.end),
-          Math.PI / 2 * this.step / this.steps
+          ((Math.PI / 2) * this.step) / this.steps
         ),
-      "XYZ",
+      'XYZ',
       true
     );
   }
@@ -76,9 +76,9 @@ class GravityPoint {
     let radiusY = position.y - center.y;
     let radiusZ = position.z - center.z;
     return new THREE.Vector3(
-      position.x + this.m1 * this.m2 * this.g / (radiusX * radiusX),
-      position.y + this.m1 * this.m2 * this.g / (radiusY * radiusY),
-      position.z + this.m1 * this.m2 * this.g / (radiusZ * radiusZ)
+      position.x + (this.m1 * this.m2 * this.g) / (radiusX * radiusX),
+      position.y + (this.m1 * this.m2 * this.g) / (radiusY * radiusY),
+      position.z + (this.m1 * this.m2 * this.g) / (radiusZ * radiusZ)
     );
   }
 }

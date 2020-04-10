@@ -1,5 +1,5 @@
-import * as THREE from "three";
-import * as GameMath from "./math.js";
+import * as THREE from 'three';
+import * as GameMath from './math.js';
 
 class GameEntity {
   constructor(name, object) {
@@ -106,7 +106,7 @@ class GameEntity {
     return this.anchor;
   }
 
-  addChild(child) {
+  add(child) {
     this.anchor.add(child.getAnchor());
     this.children[child.name] = child;
   }
@@ -122,7 +122,7 @@ class GameEntity {
   setRotationInterpolation(x, y, z, steps) {
     this.rotation_interpolation = new GameMath.QuatInterpolation(
       this.anchor.rotation.clone(),
-      new THREE.Euler(x, y, z, "XYZ"),
+      new THREE.Euler(x, y, z, 'XYZ'),
       steps
     );
   }

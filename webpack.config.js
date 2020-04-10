@@ -1,12 +1,12 @@
-const path = require("path");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const webpack = require("webpack");
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
-  entry: "./src/js/index.js",
+  entry: './src/js/index.js',
   output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "bundle.js"
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'bundle.js',
   },
   module: {
     rules: [
@@ -14,31 +14,31 @@ module.exports = {
         test: /\.js$/,
         use: [
           {
-            loader: "babel-loader"
-          }
-        ]
-      }
-    ]
+            loader: 'babel-loader',
+          },
+        ],
+      },
+    ],
   },
   plugins: [
     new CopyWebpackPlugin([
       {
-        from: "./src/index.html",
-        to: "index.html"
+        from: './src/index.html',
+        to: 'index.html',
       },
       {
-        from: "./src/css/index.css",
-        to: "bundle.css"
-      }
+        from: './src/css/index.css',
+        to: 'bundle.css',
+      },
     ]),
-    new webpack.EnvironmentPlugin(["PEER_HOST", "PEER_PORT"])
+    new webpack.EnvironmentPlugin(['PEER_HOST', 'PEER_PORT']),
   ],
   devServer: {
     host: '0.0.0.0',
-    contentBase: path.join(__dirname, "dist"),
+    contentBase: path.join(__dirname, 'dist'),
     hot: true,
     historyApiFallback: true,
     compress: false,
-    port: 8000
-  }
+    port: 8000,
+  },
 };
