@@ -1,10 +1,5 @@
+import * as game from './gameengine';
 import { CreateCar } from './helpers.js';
-import { Ticker } from './clock.js';
-import { Controls } from './controls.js';
-import { World } from './world.js';
-import { Camera } from './camera.js';
-import { Sun } from './light.js';
-import { LevelGroundPlayer } from './player.js';
 import WebRTCClient from 'webrtc-js';
 
 const worldActions = {
@@ -68,16 +63,16 @@ Connection.onopen = function () {
   };
 };
 
-let world = new World();
+let world = new game.World();
 let car = CreateCar(Client.id);
-let camera1 = new Camera('cam1', 35, window.innerWidth / window.innerHeight);
+let camera1 = new game.Camera('cam1', 35, window.innerWidth / window.innerHeight);
 
 camera1.setPosition(0, 5000, 50000);
 car.add(camera1);
 world.add(car);
 
 // keyboard
-let keyboard = new Controls();
+let keyboard = new game.Controls();
 // forward
 keyboard.bindKey('w', function () {
   car.moveForward();
@@ -95,9 +90,9 @@ keyboard.bindKey('d', function () {
   car.rotateRight();
 });
 
-let listener = new Ticker(Client.ping);
+let listener = new game.Ticker(Client.ping);
 
-let broadcaster = new Ticker(function () {
+let broadcaster = new game.Ticker(function () {
   let rotation = car.getRotation();
   Client.broadcast({
     entity_id: car.id,
@@ -147,7 +142,7 @@ const frameRate = 30;
     world
       .getAllObjects()
       .filter((object) => {
-        if (object instanceof LevelGroundPlayer && object.id !== car.id) {
+        if (object instanceof game.LevelGroundPlayer && object.id !== car.id) {
           return true;
         }
       })
