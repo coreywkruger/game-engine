@@ -1,3 +1,9 @@
-# 3d yo wife, 3d yo kids
+# Setup
 
-`npm start # http://localhost:3002`
+```bash
+# start container
+$ make shell
+
+# run npm 
+~/gameroom $ npm install && npm start
+```

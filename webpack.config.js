@@ -34,10 +34,11 @@ module.exports = {
     new webpack.EnvironmentPlugin(["PEER_HOST", "PEER_PORT"])
   ],
   devServer: {
+    host: '0.0.0.0',
     contentBase: path.join(__dirname, "dist"),
     hot: true,
     historyApiFallback: true,
     compress: false,
-    port: 3002
+    port: 8000
   }
 };

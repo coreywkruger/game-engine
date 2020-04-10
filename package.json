@@ -1,22 +1,23 @@
 {
-  "name": "gengine",
+  "name": "gameroom",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build": "PEER_HOST=localhost PEER_PORT=8444 ./node_modules/.bin/webpack",
-    "start": "PEER_HOST=localhost PEER_PORT=8444 ./node_modules/.bin/webpack-dev-server --hot --inline",
-    "deploy": "PEER_HOST=45.79.101.197 PEER_PORT=8444 ./node_modules/.bin/webpack && ./deploy.sh"
+    "start": "PEER_HOST=localhost PEER_PORT=8444 ./node_modules/.bin/webpack-dev-server --hot --inline"
   },
   "author": "Corey Kruger",
-  "license": "ISC",
   "dependencies": {
     "babel-core": "^6.25.0",
     "babel-loader": "^7.1.1",
     "copy-webpack-plugin": "^4.0.1",
-    "idaho-ghola": "2.0.0",
     "webpack": "^3.2.0",
     "webpack-dev-server": "^2.5.1",
-    "webrtc-js": "2.0.1"
+    "webrtc-js": "2.0.1",
+    "three": "^0.85.0"
+  },
+  "devDependencies": {
+    "webpack-cli": "^3.3.11"
   }
 }
