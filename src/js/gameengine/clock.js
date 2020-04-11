@@ -1,13 +1,13 @@
 class Ticker {
-  constructor(func) {
+  constructor(rate) {
+    this.rate = rate;
     this.frame = 0;
-    this.func = func;
   }
-  tick(time) {
+  tick(callback) {
     this.frame++;
-    if (this.frame > time) {
+    if (this.frame > this.rate) {
       this.frame = 0;
-      this.func();
+      callback();
     }
   }
 }

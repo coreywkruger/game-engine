@@ -1,6 +1,6 @@
-import * as game from './gameengine';
-import { CreateCar } from './helpers.js';
-import WebRTCClient from 'webrtc-js';
+import * as game from "./gameengine";
+import { CreateCar } from "./helpers.js";
+import WebRTCClient from "./webrtc-js";
 
 const worldActions = {
   translate: function (entity, message) {
@@ -11,29 +11,35 @@ const worldActions = {
   },
 };
 
-const client = new WebRTCClient({ host: `${process.env.PEER_HOST}:${process.env.PEER_PORT}/register` });
+const client = new WebRTCClient({
+  host: `${process.env.PEER_HOST}:${process.env.PEER_PORT}/register`,
+});
 
-client.onmessage = function(id, data) {
+client.onmessage = function (id, data) {
   let message = JSON.parse(data);
-  if (message.type === 'entity') {
-    let entity = world.getObject(message.entity_id);
+  if (message.type === "entity") {
+    let entity = world.getObject(message.id);
     if (entity) {
       worldActions[message.action](entity, message);
     }
   }
 };
 
-client.onconnect = function(client_id) {
+client.onconnect = function (client_id) {
   world.add(CreateCar(client_id));
 };
 
-client.onremove = function(client_id) {
+client.onremove = function (client_id) {
   world.deleteObject(client_id);
 };
 
 let world = new game.World();
 let car = CreateCar(client.id);
-let camera1 = new game.Camera('cam1', 35, window.innerWidth / window.innerHeight);
+let camera1 = new game.Camera(
+  "cam1",
+  35,
+  window.innerWidth / window.innerHeight
+);
 
 camera1.setPosition(0, 5000, 50000);
 car.add(camera1);
@@ -42,66 +48,69 @@ world.add(car);
 // keyboard
 let keyboard = new game.Controls();
 // forward
-keyboard.bindKey('w', function () {
+keyboard.bindKey("w", function () {
   car.moveForward();
 });
 // backward
-keyboard.bindKey('s', function () {
+keyboard.bindKey("s", function () {
   car.moveBackward();
 });
 // left
-keyboard.bindKey('a', function () {
+keyboard.bindKey("a", function () {
   car.rotateLeft();
 });
 // right
-keyboard.bindKey('d', function () {
+keyboard.bindKey("d", function () {
   car.rotateRight();
 });
 
-let listener = new game.Ticker(function() {
-  client.ping();
-});
-
-let broadcaster = new game.Ticker(function () {
-  let rotation = car.getRotation();
-  client.broadcast({
-    entity_id: car.name,
-    type: 'entity',
-    action: 'rotate',
-    x: rotation.x,
-    y: rotation.y,
-    z: rotation.z,
-  });
-  let position = car.getPosition();
-  client.broadcast({
-    entity_id: car.name,
-    type: 'entity',
-    action: 'translate',
-    x: position.x,
-    y: position.y,
-    z: position.z,
-  });
-});
-
 // add canvas to page
-document.getElementById('view').appendChild(camera1.getCanvas());
+document.getElementById("view").appendChild(camera1.getCanvas());
 document.addEventListener(
-  'keydown',
+  "keydown",
   (event) => {
     keyboard.onKeyDown(event.key);
   },
   false
 );
 document.addEventListener(
-  'keyup',
+  "keyup",
   (event) => {
     keyboard.onKeyUp(event.key);
   },
   false
 );
 
+function keepAlive() {
+  client.ping();
+}
+
+function broadcastCoordinates() {
+  let rotation = car.getRotation();
+  client.broadcast({
+    id: car.name,
+    type: "entity",
+    action: "rotate",
+    x: rotation.x,
+    y: rotation.y,
+    z: rotation.z,
+  });
+  let position = car.getPosition();
+  client.broadcast({
+    id: car.name,
+    type: "entity",
+    action: "translate",
+    x: position.x,
+    y: position.y,
+    z: position.z,
+  });
+}
+
 // 30 frames per second
-const frameRate = 30;
+const FRAME_RATE = 30;
+
+const broadcastTimer = new game.Ticker(FRAME_RATE / 10);
+const keepAliveTimer = new game.Ticker(FRAME_RATE * 5);
 
 (function animate() {
   setTimeout(function () {
@@ -112,20 +121,17 @@ const frameRate = 30;
     world
       .getAllObjects()
       .filter((object) => {
-        if (object instanceof game.LevelGroundPlayer && object.id !== car.id) {
+        if (object instanceof game.LevelGroundPlayer && object.name !== car.name) {
           return true;
         }
       })
-      .forEach((object) => {
-        object.interpolatePosition();
-        object.interpolateRotation();
-      });
+      .forEach((object) => object.interpolateCoordinates());
 
     // broadcaster user coordinates
-    broadcaster.tick(frameRate);
+    broadcastTimer.tick(broadcastCoordinates);
     // listen for other users coordinates
-    listener.tick(frameRate * 5);
+    keepAliveTimer.tick(keepAlive);
 
     requestAnimationFrame(animate);
-  }, 1000 / frameRate);
+  }, 1000 / FRAME_RATE);
 })();

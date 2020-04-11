@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import * as GameMath from './math.js';
+import * as THREE from "three";
+import * as GameMath from "./math.js";
 
 class GameEntity {
   constructor(name, object) {
@@ -11,11 +11,19 @@ class GameEntity {
   }
 
   getPosition() {
-    return this.anchor.position.clone();
+    return {
+      x: this.anchor.position.x,
+      y: this.anchor.position.y,
+      z: this.anchor.position.z,
+    };
   }
 
   getRotation() {
-    return this.anchor.rotation.clone();
+    return {
+      x: this.anchor.rotation.x,
+      y: this.anchor.rotation.y,
+      z: this.anchor.rotation.z,
+    };
   }
 
   translate(x, y, z) {
@@ -122,7 +130,7 @@ class GameEntity {
   setRotationInterpolation(x, y, z, steps) {
     this.rotation_interpolation = new GameMath.QuatInterpolation(
       this.anchor.rotation.clone(),
-      new THREE.Euler(x, y, z, 'XYZ'),
+      new THREE.Euler(x, y, z, "XYZ"),
       steps
     );
   }
@@ -147,6 +155,11 @@ class GameEntity {
         this.rotation_interpolation = null;
       }
     }
+  }
+
+  interpolateCoordinates() {
+    this.interpolatePosition();
+    this.interpolateRotation();
   }
 }
 
