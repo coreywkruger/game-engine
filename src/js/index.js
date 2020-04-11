@@ -11,60 +11,28 @@ const worldActions = {
   },
 };
 
-// my peering service is a ws server
-let Connection = new WebSocket(
-  `ws://${process.env.PEER_HOST}:${process.env.PEER_PORT}`
-);
+const client = new WebRTCClient({ host: `${process.env.PEER_HOST}:${process.env.PEER_PORT}/register` });
 
-const CONNECTION_NAME = `taco-eater-${Math.floor(Math.random() * 100000)}`;
-// new client
-let Client = new WebRTCClient({ CONNECTION_NAME });
-
-// send to peering service
-Client.sendToPeerService = function (message) {
-  Connection.send(JSON.stringify(message));
-};
-
-// on message from peer service
-Connection.onmessage = function (message) {
-  Client.processPeerData(JSON.parse(message.data));
-};
-
-Connection.onopen = function () {
-  Client.onconnect = function (client_id) {
-    world.add(CreateCar(client_id));
-  };
-
-  Client.onremove = function (client_id) {
-    world.deleteObject(client_id);
-  };
-
-  Client.onavailableconnection = function () {
-    // when a new peer becomes available for connection
-    Client.getAvailableConnections().forEach((connection) => {
-      if (!Client.getPeerByClientID(connection.to_client)) {
-        // if not already connected, connect
-        Client.connect({
-          client_id: connection.to_client,
-          name: connection.name,
-        });
-      }
-    });
-  };
-
-  Client.onmessage = function (connectionID, data) {
-    let message = JSON.parse(data);
-    if (message.type === 'entity') {
-      let entity = world.getObject(message.entity_id);
-      if (entity) {
-        worldActions[message.action](entity, message);
-      }
+client.onmessage = function(id, data) {
+  let message = JSON.parse(data);
+  if (message.type === 'entity') {
+    let entity = world.getObject(message.entity_id);
+    if (entity) {
+      worldActions[message.action](entity, message);
     }
-  };
+  }
+};
+
+client.onconnect = function(client_id) {
+  world.add(CreateCar(client_id));
+};
+
+client.onremove = function(client_id) {
+  world.deleteObject(client_id);
 };
 
 let world = new game.World();
-let car = CreateCar(Client.id);
+let car = CreateCar(client.id);
 let camera1 = new game.Camera('cam1', 35, window.innerWidth / window.innerHeight);
 
 camera1.setPosition(0, 5000, 50000);
@@ -90,12 +58,14 @@ keyboard.bindKey('d', function () {
   car.rotateRight();
 });
 
-let listener = new game.Ticker(Client.ping);
+let listener = new game.Ticker(function() {
+  client.ping();
+});
 
 let broadcaster = new game.Ticker(function () {
   let rotation = car.getRotation();
-  Client.broadcast({
-    entity_id: car.id,
+  client.broadcast({
+    entity_id: car.name,
     type: 'entity',
     action: 'rotate',
     x: rotation.x,
@@ -103,8 +73,8 @@ let broadcaster = new game.Ticker(function () {
     z: rotation.z,
   });
   let position = car.getPosition();
-  Client.broadcast({
-    entity_id: car.id,
+  client.broadcast({
+    entity_id: car.name,
     type: 'entity',
     action: 'translate',
     x: position.x,
@@ -151,10 +121,10 @@ const frameRate = 30;
         object.interpolateRotation();
       });
 
-    // // broadcaster user coordinates
-    // broadcaster.tick(3);
-    // // listen for other users coordinates
-    // listener.tick(frameRate * 5);
+    // broadcaster user coordinates
+    broadcaster.tick(frameRate);
+    // listen for other users coordinates
+    listener.tick(frameRate * 5);
 
     requestAnimationFrame(animate);
   }, 1000 / frameRate);

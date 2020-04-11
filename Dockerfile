@@ -1,5 +1,5 @@
 FROM node:10-alpine as dev
-WORKDIR /home/node/gameroom
+WORKDIR /home/node/gameroom-frontend
 RUN apk add -U curl make git bind-tools
 
 FROM dev as builder

@@ -1,6 +1,5 @@
 import * as game from './gameengine';
 
-console.log(game)
 function CreateCar(id) {
   let cab = new game.Cube(`car-cab-${id}`, 4500, 4500, 15000, 0x00ff00);
 
