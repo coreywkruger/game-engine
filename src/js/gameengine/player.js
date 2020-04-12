@@ -1,7 +1,7 @@
-import { GameEntity } from './entity.js';
+import { GameObject } from './object.js';
 import * as THREE from 'three';
 
-class LevelGroundPlayer extends GameEntity {
+class LevelGroundPlayer extends GameObject {
   constructor(id) {
     super(id);
   }

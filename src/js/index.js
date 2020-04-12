@@ -1,27 +1,20 @@
+import uuid from "uuid";
 import * as game from "./gameengine";
 import { CreateCar } from "./helpers.js";
 import WebRTCClient from "./webrtc-js";
 
-const worldActions = {
-  translate: function (entity, message) {
-    entity.setPositionInterpolation(message.x, message.y, message.z, 10);
-  },
-  rotate: function (entity, message) {
-    entity.setRotationInterpolation(message.x, message.y, message.z, 10);
-  },
-};
+const id = uuid.v4();
 
 const client = new WebRTCClient({
-  host: `${process.env.PEER_HOST}:${process.env.PEER_PORT}/register`,
+  host: `${process.env.PEER_SERVICE}/register?id=${id}`,
 });
 
 client.onmessage = function (id, data) {
   let message = JSON.parse(data);
-  if (message.type === "entity") {
-    let entity = world.getObject(message.id);
-    if (entity) {
-      worldActions[message.action](entity, message);
-    }
+  let object = world.getObject(message.id);
+  if (object) {
+    object.setPositionInterpolation(message.tx, message.ty, message.tz, 10);
+    object.setRotationInterpolation(message.rx, message.ry, message.rz, 10);
   }
 };
 
@@ -41,7 +34,8 @@ let camera1 = new game.Camera(
   window.innerWidth / window.innerHeight
 );
 
-camera1.setPosition(0, 5000, 50000);
+camera1.setPosition(0, 12000, 50000);
+camera1.rotateX(-Math.PI / 12);
 car.add(camera1);
 world.add(car);
 
@@ -66,43 +60,25 @@ keyboard.bindKey("d", function () {
 
 // add canvas to page
 document.getElementById("view").appendChild(camera1.getCanvas());
-document.addEventListener(
-  "keydown",
-  (event) => {
-    keyboard.onKeyDown(event.key);
-  },
-  false
-);
-document.addEventListener(
-  "keyup",
-  (event) => {
-    keyboard.onKeyUp(event.key);
-  },
-  false
-);
+document.addEventListener("keydown", (event) => keyboard.onKeyDown(event.key));
+document.addEventListener("keyup", (event) => keyboard.onKeyUp(event.key));
 
 function keepAlive() {
   client.ping();
 }
 
 function broadcastCoordinates() {
-  let rotation = car.getRotation();
+  const rotation = car.getRotation();
+  const position = car.getPosition();
+
   client.broadcast({
     id: car.name,
-    type: "entity",
-    action: "rotate",
-    x: rotation.x,
-    y: rotation.y,
-    z: rotation.z,
-  });
-  let position = car.getPosition();
-  client.broadcast({
-    id: car.name,
-    type: "entity",
-    action: "translate",
-    x: position.x,
-    y: position.y,
-    z: position.z,
+    rx: rotation.x,
+    ry: rotation.y,
+    rz: rotation.z,
+    tx: position.x,
+    ty: position.y,
+    tz: position.z,
   });
 }
 
@@ -116,12 +92,14 @@ const keepAliveTimer = new game.Ticker(FRAME_RATE * 5);
   setTimeout(function () {
     // render world on canvase
     camera1.render(world);
-
     // update all object positions
     world
       .getAllObjects()
       .filter((object) => {
-        if (object instanceof game.LevelGroundPlayer && object.name !== car.name) {
+        if (
+          object instanceof game.LevelGroundPlayer &&
+          object.name !== car.name
+        ) {
           return true;
         }
       })

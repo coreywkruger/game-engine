@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "PEER_HOST=0.0.0.0 PEER_PORT=3000 ./node_modules/.bin/webpack",
-    "start": "PEER_HOST=0.0.0.0 PEER_PORT=3000 ./node_modules/.bin/webpack-dev-server --hot --inline"
+    "build": "PEER_SERVICE=0.0.0.0:3000 ./node_modules/.bin/webpack",
+    "start": "PEER_SERVICE=0.0.0.0:3000 ./node_modules/.bin/webpack-dev-server --hot --inline"
   },
   "author": "Corey Kruger",
   "dependencies": {

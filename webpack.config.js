@@ -31,7 +31,7 @@ module.exports = {
         to: 'bundle.css',
       },
     ]),
-    new webpack.EnvironmentPlugin(['PEER_HOST', 'PEER_PORT']),
+    new webpack.EnvironmentPlugin(['PEER_SERVICE']),
   ],
   devServer: {
     host: '0.0.0.0',

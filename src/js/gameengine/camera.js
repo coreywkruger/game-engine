@@ -1,7 +1,7 @@
-import { GameEntity } from './entity';
+import { GameObject } from './object.js';
 import * as THREE from 'three';
 
-class Camera extends GameEntity {
+class Camera extends GameObject {
   constructor(name, fov, aspect, near, far) {
     super(
       name,

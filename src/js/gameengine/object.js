@@ -1,13 +1,14 @@
 import * as THREE from "three";
 import * as GameMath from "./math.js";
 
-class GameEntity {
+class GameObject {
   constructor(name, object) {
     this.anchor = object || new THREE.Object3D();
     this.name = name;
     this.children = {};
-    this.position_interpolation = null;
-    this.rotation_interpolation = null;
+
+    this.position_interpolation = null
+    this.rotation_interpolation = null
   }
 
   getPosition() {
@@ -163,4 +164,4 @@ class GameEntity {
   }
 }
 
-export { GameEntity };
+export { GameObject };

@@ -1,7 +1,7 @@
-import { GameEntity } from './entity.js';
+import { GameObject } from './object.js';
 import * as THREE from 'three';
 
-class Cube extends GameEntity {
+class Cube extends GameObject {
   constructor(name, w, h, d, color) {
     let mesh = new THREE.Mesh(
       new THREE.BoxGeometry(w, h, d),
@@ -14,7 +14,7 @@ class Cube extends GameEntity {
   }
 }
 
-class Cylinder extends GameEntity {
+class Cylinder extends GameObject {
   constructor(name, r, d, color) {
     let mesh = new THREE.Mesh(
       new THREE.CylinderGeometry(r, r, d, 8),
