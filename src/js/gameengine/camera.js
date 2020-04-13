@@ -2,10 +2,10 @@ import { GameObject } from './object.js';
 import * as THREE from 'three';
 
 class Camera extends GameObject {
-  constructor(name, fov, aspect, near, far) {
+  constructor(name, fov, width, height, near, far) {
     super(
       name,
-      new THREE.PerspectiveCamera(fov, aspect, near || 1, far || 1000000)
+      new THREE.PerspectiveCamera(fov, width / height, near || 1, far || 1000000)
     );
 
     this.mainRenderer = new THREE.WebGLRenderer({
@@ -13,7 +13,7 @@ class Camera extends GameObject {
       autoClear: true,
       alpha: true,
     });
-    this.mainRenderer.setSize(2000, 1000);
+    this.mainRenderer.setSize(width, height);
     this.mainRenderer.setClearColor(0x000000);
     this.mainRenderer.setClear = true;
   }

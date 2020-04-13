@@ -11,13 +11,17 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        use: [
-          {
-            loader: 'babel-loader',
-          },
-        ],
-      },
+        test: /\.js|\.tag\.html$/,
+        exclude: [/node_modules|dist/, /.+\.json/],
+        use: {
+          loader: 'babel-loader',
+          options: {
+            plugins: [
+              '@babel/plugin-proposal-object-rest-spread'
+            ]
+          }
+        }
+      }
     ],
   },
   plugins: [

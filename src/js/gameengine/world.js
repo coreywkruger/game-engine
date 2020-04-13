@@ -5,7 +5,7 @@ class World {
     this.scene = new THREE.Scene();
 
     // grid
-    var gridHelper = new THREE.GridHelper(10000000, 1000);
+    var gridHelper = new THREE.GridHelper(900000, 50);
     gridHelper.position.y = -5000;
     this.scene.add(gridHelper);
     this.objects = {};

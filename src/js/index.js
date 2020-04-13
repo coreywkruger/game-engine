@@ -3,15 +3,15 @@ import * as game from "./gameengine";
 import { CreateCar } from "./helpers.js";
 import WebRTCClient from "./webrtc-js";
 
-const id = uuid.v4();
+const clientId = uuid.v4();
 
 const client = new WebRTCClient({
-  host: `${process.env.PEER_SERVICE}/register?id=${id}`,
+  host: `${process.env.PEER_SERVICE}/register?id=${clientId}`,
 });
 
 client.onmessage = function (id, data) {
-  let message = JSON.parse(data);
-  let object = world.getObject(message.id);
+  const message = JSON.parse(data);
+  const object = world.getObject(message.id);
   if (object) {
     object.setPositionInterpolation(message.tx, message.ty, message.tz, 10);
     object.setRotationInterpolation(message.rx, message.ry, message.rz, 10);
@@ -26,42 +26,41 @@ client.onremove = function (client_id) {
   world.deleteObject(client_id);
 };
 
-let world = new game.World();
-let car = CreateCar(client.id);
-let camera1 = new game.Camera(
-  "cam1",
-  35,
-  window.innerWidth / window.innerHeight
-);
-
+// create camera
+const camera1 = new game.Camera("cam1", 35, 1000, 500);
 camera1.setPosition(0, 12000, 50000);
 camera1.rotateX(-Math.PI / 12);
+
+// create car
+const car = CreateCar(client.id);
+// attach camera to car (chase cam)
 car.add(camera1);
+
+// create game world
+const world = new game.World();
+// add car to game world
 world.add(car);
 
-// keyboard
-let keyboard = new game.Controls();
-// forward
+// create key bindings to control car (wasd)
+const keyboard = new game.Controls();
 keyboard.bindKey("w", function () {
   car.moveForward();
 });
-// backward
 keyboard.bindKey("s", function () {
   car.moveBackward();
 });
-// left
 keyboard.bindKey("a", function () {
   car.rotateLeft();
 });
-// right
 keyboard.bindKey("d", function () {
   car.rotateRight();
 });
 
-// add canvas to page
-document.getElementById("view").appendChild(camera1.getCanvas());
+// trigger keybindings
 document.addEventListener("keydown", (event) => keyboard.onKeyDown(event.key));
 document.addEventListener("keyup", (event) => keyboard.onKeyUp(event.key));
+// add canvas to page
+document.getElementById("view").appendChild(camera1.getCanvas());
 
 function keepAlive() {
   client.ping();
@@ -70,23 +69,21 @@ function keepAlive() {
 function broadcastCoordinates() {
   const rotation = car.getRotation();
   const position = car.getPosition();
-
   client.broadcast({
     id: car.name,
-    rx: rotation.x,
-    ry: rotation.y,
-    rz: rotation.z,
     tx: position.x,
     ty: position.y,
     tz: position.z,
+    rx: rotation.x,
+    ry: rotation.y,
+    rz: rotation.z,
   });
 }
 
 // 30 frames per second
 const FRAME_RATE = 30;
-
 const broadcastTimer = new game.Ticker(FRAME_RATE / 10);
-const keepAliveTimer = new game.Ticker(FRAME_RATE * 5);
+const keepAliveTimer = new game.Ticker(FRAME_RATE);
 
 (function animate() {
   setTimeout(function () {
@@ -99,9 +96,8 @@ const keepAliveTimer = new game.Ticker(FRAME_RATE * 5);
         if (
           object instanceof game.LevelGroundPlayer &&
           object.name !== car.name
-        ) {
+        )
           return true;
-        }
       })
       .forEach((object) => object.interpolateCoordinates());
 

@@ -1,7 +1,14 @@
+body {
+  background-color: black;
+}
+
 #view > canvas {
   /* position: absolute; */
   /* top: 0px;
   left: 0px; */
+  border-style: solid;
+  border-color: white;
+  border-width: 1px;
   width: 500px;
   height: 500px;
 }
