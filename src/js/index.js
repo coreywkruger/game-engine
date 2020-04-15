@@ -3,11 +3,9 @@ import * as game from "./gameengine";
 import { CreateCar } from "./helpers.js";
 import WebRTCClient from "./webrtc-js";
 
-const clientId = uuid.v4();
+const client = new WebRTCClient();
 
-const client = new WebRTCClient({
-  host: `${process.env.PEER_SERVICE}/register?id=${clientId}`,
-});
+client.start(`${process.env.PEER_SERVICE}/register?id=${client.id}`);
 
 client.onmessage = function (id, data) {
   const message = JSON.parse(data);
@@ -18,11 +16,13 @@ client.onmessage = function (id, data) {
   }
 };
 
+console.log('\n+++', client.id)
 client.onconnect = function (client_id) {
+  console.log('\n==', client_id)
   world.add(CreateCar(client_id));
 };
 
-client.onremove = function (client_id) {
+client.onclose = function (client_id) {
   world.deleteObject(client_id);
 };
 
