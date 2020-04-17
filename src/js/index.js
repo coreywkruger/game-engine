@@ -7,7 +7,7 @@ const client = new WebRTCClient();
 
 client.start(`${process.env.PEER_SERVICE}/register?id=${client.id}`);
 
-client.onmessage = function (id, data) {
+client.onmessage = function (data) {
   const message = JSON.parse(data);
   const object = world.getObject(message.id);
   if (object) {
@@ -16,9 +16,8 @@ client.onmessage = function (id, data) {
   }
 };
 
-console.log('\n+++', client.id)
+// console.log('\nCLIENT ID', client.id)
 client.onconnect = function (client_id) {
-  console.log('\n==', client_id)
   world.add(CreateCar(client_id));
 };
 
